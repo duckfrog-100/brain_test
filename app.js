@@ -12,15 +12,7 @@ function searchUrl(q, engine='naver'){
 }
 function officialDomain(brand){
   const m={
-    '한화리조트':'hanwharesort.co.kr',
-    '소노호텔앤리조트':'sonohotelsresorts.com',
-    '롯데리조트':'lotteresort.com',
-    '오크밸리리조트':'oakvalley.co.kr',
-    '웰리힐리 리조트':'wellihillipark.com',
-    '호반리조트 (구 리솜리조트)':'resom.co.kr',
-    '중흥골드 스파리조트':'jhresort.co.kr',
-    '알펜시아리조트':'alpensia.com',
-    '동강시스타':'donggangsistar.co.kr'
+    '한화리조트':'hanwharesort.co.kr','소노호텔앤리조트':'sonohotelsresorts.com','롯데리조트':'lotteresort.com','오크밸리리조트':'oakvalley.co.kr','웰리힐리 리조트':'wellihillipark.com','호반리조트 (구 리솜리조트)':'resom.co.kr','중흥골드 스파리조트':'jhresort.co.kr','알펜시아리조트':'alpensia.com','동강시스타':'donggangsistar.co.kr'
   };
   return m[brand] || '';
 }
@@ -52,11 +44,21 @@ function filtered(){
 function statusClass(r){ return r.verificationStatus==='공식확인' ? 'ok' : 'auto'; }
 function render(){
  const rows=filtered(); $('count').innerHTML=`<b>${rows.length}</b>건 표시 중`;
- $('app').innerHTML=`<div class="sheet-wrap"><table class="sheet"><thead><tr><th>번호</th><th>브랜드</th><th>지역</th><th>도시</th><th>도착일자</th><th>요일</th><th>박수</th><th>투숙장소</th><th>Room Type</th><th>요금</th><th>누적신청</th><th>기준/최대</th><th>평수/등급</th><th>취사</th><th>확인상태</th><th>확인 링크</th></tr></thead><tbody>${rows.map(row).join('')}</tbody></table></div>` || '<div class="empty">검색 결과가 없습니다.</div>';
+ const grouped={}; rows.forEach(r=>(grouped[r.brand]??=[]).push(r));
+ $('app').innerHTML=Object.entries(grouped).map(([brand,items])=>groupTable(brand,items)).join('') || '<div class="empty">검색 결과가 없습니다.</div>';
 }
+function groupTable(brand,items){
+ return `<section class="resort-group"><h2>${esc(brand)} <span>${items.length}건</span></h2><div class="list-wrap"><table class="resort-list"><thead><tr><th>번호</th><th>날짜</th><th>박수</th><th>리조트 (지역)</th><th>룸 타입</th><th>기준/최대</th><th>평수/등급</th><th>금액</th><th>신청자</th><th>액션</th></tr></thead><tbody>${items.map(row).join('')}</tbody></table></div></section>`;
+}
+function dayBadge(day){return `<span class="day">${esc(day)}</span>`}
+function nightBadge(n){return `<span class="night">${n}박</span>`}
+function statusText(r){return r.verificationStatus==='자동추정' ? '<span class="warn">⊘ 확인필요</span>' : '<span class="verified">공식확인</span>'}
 function row(r){
  const q=officialQueries(r);
- return `<tr><td class="num">${r.no}</td><td>${esc(r.brand)}</td><td>${esc(r.region)}</td><td>${esc(r.city)}</td><td>${esc(r.date)}</td><td>${esc(r.day)}</td><td class="num">${r.nights}</td><td class="place">${esc(r.resort)}</td><td class="room-cell">${esc(cleanRoom(r))}</td><td class="money">${money(r.price)}</td><td class="num">${r.applicants}</td><td><b>${r.baseGuests||'?'} / ${r.maxGuests||'?'}</b></td><td>${esc(r.sizeHint)}</td><td>${r.cooking?'가능':'불가'}</td><td><span class="status ${statusClass(r)}">${r.verificationStatus==='자동추정'?'정원 확인필요':esc(r.verificationStatus)}</span></td><td class="links"><button onclick="openModal(${r.no})">상세</button><a href="${searchUrl(q.capacity,'web')}" target="_blank">정원</a><a href="${searchUrl(q.extraFee,'web')}" target="_blank">추가비</a><a href="${searchUrl(q.roomImage,'duck')}" target="_blank">사진</a></td></tr>`;
+ const fit = r.maxGuests>=5 ? '넉넉' : r.maxGuests>=4 ? '최적' : '확인필요';
+ const grade = r.sizeHint.replace('약 ','');
+ const desc = r.capacityRule.includes('스위트')||r.capacityRule.includes('로얄') ? '스위트/로얄급' : r.maxGuests>=4 ? '4인 가족 투숙 가능' : '세부 확인 필요';
+ return `<tr><td class="num">${r.no}</td><td class="date"><b>${r.date.slice(5).replace('-','/')}</b> ${dayBadge(r.day)}</td><td>${nightBadge(r.nights)}</td><td class="place"><b>${esc(r.resort)}</b><span class="region-tag">${esc(r.city)}</span></td><td class="room-cell"><div>${esc(cleanRoom(r))}</div>${statusText(r)}</td><td class="cap"><b>${r.baseGuests||'?'}인 기준</b><small>최대 ${r.maxGuests||'?'}인 · ${fit}</small></td><td class="size"><b>${esc(grade)}</b><small>${esc(desc)}</small></td><td class="money">${money(r.price)}</td><td><span class="applicants">${r.applicants}</span></td><td class="actions-cell"><button class="detail" onclick="openModal(${r.no})">▣ 상세</button><a class="apply" href="${searchUrl(q.capacity,'web')}" target="_blank">정원확인 →</a></td></tr>`;
 }
 function openModal(no){
  const r=ROOMS.find(x=>x.no===no); if(!r) return;
