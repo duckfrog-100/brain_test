@@ -38,6 +38,9 @@ function getApiInfo(r){
   return (window.API_ROOM_INFO_MAP && window.API_ROOM_INFO_MAP[key]) || null;
 }
 function hasApiImage(api){return api && api.imageUrl && api.imageUrl.startsWith('http');}
+function isUsableApi(api){return api && ['API 사용가능','API 확인권장'].includes(api.status) && numericGuest(api.baseGuests) && numericGuest(api.maxGuests);}
+function isReferenceApi(api){return api && ['API 검증필요','API 확인필요'].includes(api.status) && numericGuest(api.baseGuests) && numericGuest(api.maxGuests);}
+function numericGuest(v){return /^\d+$/.test(String(v||'')) && Number(v)>0;}
 function init(){
   [...new Set(ROOMS.map(r=>r.region))].sort().forEach(v=> $('region').insertAdjacentHTML('beforeend',`<option>${esc(v)}</option>`));
   [...new Set(ROOMS.map(r=>r.brand))].forEach(v=> $('brand').insertAdjacentHTML('beforeend',`<option>${esc(v)}</option>`));
@@ -47,8 +50,9 @@ function filtered(){
  const q=$('q').value.trim().toLowerCase(), reg=$('region').value, br=$('brand').value, cap=Number($('cap').value||0), vf=$('verified').value;
  return ROOMS.filter(r=>{
   const api=getApiInfo(r);
-  const txt=[r.no,r.resort,r.roomType,r.city,r.region,r.brand,r.date,r.day,api?.apiRoomName,api?.note,api?.status].join(' ').toLowerCase();
-  return (!q||txt.includes(q)) && (!reg||r.region===reg) && (!br||r.brand===br) && (!cap||Number(r.maxGuests)>=cap) && (!vf||r.verificationStatus===vf);
+  const displayMax = isUsableApi(api) ? Number(api.maxGuests) : Number(r.maxGuests||0);
+  const txt=[r.no,r.resort,r.roomType,r.city,r.region,r.brand,r.date,r.day,api?.apiRoomName,api?.note,api?.status,api?.usability].join(' ').toLowerCase();
+  return (!q||txt.includes(q)) && (!reg||r.region===reg) && (!br||r.brand===br) && (!cap||displayMax>=cap) && (!vf||r.verificationStatus===vf);
  });
 }
 function render(){
@@ -62,21 +66,26 @@ function groupTable(brand,items){
 function dayBadge(day){return `<span class="day">${esc(day)}</span>`}
 function nightBadge(n){return `<span class="night">${n}박</span>`}
 function statusText(r,api){
-  if(api?.status==='API 직접매칭') return '<span class="verified">API 직접매칭</span>';
-  if(api?.status==='API 참고값') return '<span class="api-ref">API 참고값</span>';
+  if(api?.status==='API 사용가능') return '<span class="verified">API 사용가능</span>';
+  if(api?.status==='API 확인권장') return '<span class="verified">API 확인권장</span>';
+  if(api?.status==='API 검증필요') return '<span class="api-ref">API 검증필요</span>';
+  if(api?.status==='API 확인필요') return '<span class="api-ref">API 확인필요</span>';
+  if(api?.status==='API 미사용권장') return '<span class="api-bad">API 미사용권장</span>';
+  if(api?.status==='API 별도수집') return '<span class="api-none">API 별도수집</span>';
   if(api?.status==='API 상세없음') return '<span class="api-none">API 상세없음</span>';
   return r.verificationStatus==='자동추정' ? '<span class="warn">⊘ 확인필요</span>' : '<span class="verified">공식확인</span>';
 }
 function capBlock(r,api){
-  if(api?.status==='API 직접매칭') return `<b>${esc(api.baseGuests)}인 기준</b><small>최대 ${esc(api.maxGuests)}인 · API 직접매칭</small>`;
-  if(api?.status==='API 참고값') return `<b>${r.baseGuests||'?'}인 기준</b><small>자동추정 최대 ${r.maxGuests||'?'}인 · API 참고 ${esc(api.baseGuests)}/${esc(api.maxGuests)}</small>`;
+  if(isUsableApi(api)) return `<b>${esc(api.baseGuests)}인 기준</b><small>최대 ${esc(api.maxGuests)}인 · ${esc(api.status)}</small>`;
+  if(isReferenceApi(api)) return `<b>${r.baseGuests||'?'}인 기준</b><small>자동추정 최대 ${r.maxGuests||'?'}인 · API 참고 ${esc(api.baseGuests)}/${esc(api.maxGuests)}</small>`;
   return `<b>${r.baseGuests||'?'}인 기준</b><small>최대 ${r.maxGuests||'?'}인 · 자동추정</small>`;
 }
 function apiBlock(api){
   if(!api) return `<span class="api-muted">API 결과 없음</span>`;
-  const room = api.apiRoomName || '객실 상세정보 없음';
+  const room = api.apiRoomName && api.apiRoomName !== 'N/A' ? api.apiRoomName : '객실 정보 없음';
   const img = hasApiImage(api) ? '<span class="img-ok">이미지 있음</span>' : '<span class="api-muted">이미지 없음</span>';
-  return `<b>${esc(api.status)}</b><small>${esc(room)}</small>${img}`;
+  const score = api.roomScore ? `<small>객실점수 ${esc(api.roomScore)} · 숙소점수 ${esc(api.hotelScore)}</small>` : '';
+  return `<b>${esc(api.status)}</b><small>${esc(room)}</small>${score}${img}`;
 }
 function row(r){
  const q=officialQueries(r);
@@ -90,8 +99,8 @@ function openModal(no){
  const q=officialQueries(r);
  const api=getApiInfo(r);
  const apiImage = hasApiImage(api) ? `<img class="api-img" src="${esc(api.imageUrl)}" alt="${esc(api.apiRoomName || r.resort)} 객실 이미지" onerror="this.style.display='none'">` : '';
- const apiPanel = api ? `<h3>한국관광공사 API 매칭</h3>${apiImage}<div class="grid"><div><label>매칭상태</label><b>${esc(api.status)}</b></div><div><label>contentid</label><b>${esc(api.contentid)}</b></div><div><label>매칭된 숙소명</label><b>${esc(api.matchedHotel)}</b></div><div><label>API 객실명</label><b>${esc(api.apiRoomName || '정보 없음')}</b></div><div><label>API 기준/최대</label><b>${esc(api.baseGuests)} / ${esc(api.maxGuests)}</b></div><div><label>비고</label><b>${esc(api.note)}</b></div></div>` : `<h3>한국관광공사 API 매칭</h3><p class="hint">해당 객실은 API 매칭 결과가 없습니다.</p>`;
- $('modalBody').innerHTML=`<h2>${esc(r.resort)}</h2><p class="sub">${esc(r.city)} · ${esc(r.roomType)}</p><div class="grid"><div><label>일정</label><b>${esc(r.date)} (${esc(r.day)}) · ${r.nights}박</b></div><div><label>요금</label><b>${money(r.price)}</b></div><div><label>자동추정 기준/최대</label><b>${r.baseGuests||'?'}인 / ${r.maxGuests||'?'}인</b></div><div><label>인원추가비</label><b>${esc(r.extraGuestFee)}</b></div><div><label>평수/등급</label><b>${esc(r.sizeHint)}</b></div><div><label>매핑 근거</label><b>${esc(r.capacityRule)}</b></div></div>${apiPanel}<div class="actions">${r.brandHomeUrl?`<a href="${esc(r.brandHomeUrl)}" target="_blank">공식 홈페이지</a>`:''}${hasApiImage(api)?`<a href="${esc(api.imageUrl)}" target="_blank">API 객실이미지</a>`:''}<a href="${searchUrl(q.officialRoom,'web')}" target="_blank">공식 객실 페이지 찾기</a><a href="${searchUrl(q.officialImage,'duck')}" target="_blank">공식 홈페이지 이미지</a><a href="${searchUrl(q.capacity,'web')}" target="_blank">정원 확인</a><a href="${searchUrl(q.extraFee,'web')}" target="_blank">인원추가비 확인</a></div><p class="hint">API 참고값은 객실명이 정확히 맞지 않은 경우이므로 확정 정원으로 사용하지 마세요.</p>`;
+ const apiPanel = api ? `<h3>한국관광공사 API 매칭</h3>${apiImage}<div class="grid"><div><label>매칭상태</label><b>${esc(api.status)}</b></div><div><label>사용 가능 여부</label><b>${esc(api.usability)}</b></div><div><label>contentid</label><b>${esc(api.contentid)}</b></div><div><label>매칭된 숙소명</label><b>${esc(api.matchedHotel)}</b></div><div><label>API 객실명</label><b>${esc(api.apiRoomName || '정보 없음')}</b></div><div><label>API 기준/최대</label><b>${esc(api.baseGuests)} / ${esc(api.maxGuests)}</b></div><div><label>숙소/객실 점수</label><b>${esc(api.hotelScore)} / ${esc(api.roomScore)}</b></div><div><label>비고</label><b>${esc(api.note)}</b></div></div>` : `<h3>한국관광공사 API 매칭</h3><p class="hint">해당 객실은 API 매칭 결과가 없습니다.</p>`;
+ $('modalBody').innerHTML=`<h2>${esc(r.resort)}</h2><p class="sub">${esc(r.city)} · ${esc(r.roomType)}</p><div class="grid"><div><label>일정</label><b>${esc(r.date)} (${esc(r.day)}) · ${r.nights}박</b></div><div><label>요금</label><b>${money(r.price)}</b></div><div><label>자동추정 기준/최대</label><b>${r.baseGuests||'?'}인 / ${r.maxGuests||'?'}인</b></div><div><label>인원추가비</label><b>${esc(r.extraGuestFee)}</b></div><div><label>평수/등급</label><b>${esc(r.sizeHint)}</b></div><div><label>매핑 근거</label><b>${esc(r.capacityRule)}</b></div></div>${apiPanel}<div class="actions">${r.brandHomeUrl?`<a href="${esc(r.brandHomeUrl)}" target="_blank">공식 홈페이지</a>`:''}${hasApiImage(api)?`<a href="${esc(api.imageUrl)}" target="_blank">API 객실이미지</a>`:''}<a href="${searchUrl(q.officialRoom,'web')}" target="_blank">공식 객실 페이지 찾기</a><a href="${searchUrl(q.officialImage,'duck')}" target="_blank">공식 홈페이지 이미지</a><a href="${searchUrl(q.capacity,'web')}" target="_blank">정원 확인</a><a href="${searchUrl(q.extraFee,'web')}" target="_blank">인원추가비 확인</a></div><p class="hint">API 검증필요·확인필요·미사용권장 항목은 확정 정원으로 사용하지 마세요. 최종 신청 전 공식 홈페이지 확인이 필요합니다.</p>`;
  $('modal').classList.add('open'); document.body.style.overflow='hidden';
 }
 function closeModal(e){ if(e.target.id==='modal') closeModalDirect(); }
