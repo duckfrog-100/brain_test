@@ -6,14 +6,14 @@
 <link rel="stylesheet" href="style.css">
 </head>
 <body>
-<header class="hero"><div><h1>🏖️ 2026 여름 휴가 콘도 객실 확인</h1><p>지역·기준/최대인원·공식사진·인원추가비 확인용 공유 페이지</p></div><div class="badges"><span id="totalBadge">0건</span><span>공식사진 URL 방식</span></div></header>
-<section class="notice"><b>확인 기준</b> 객실정원은 1차 자동추정값입니다. <b>공식확인</b> 상태인 행만 공식 객실 페이지/공식 이미지 URL 확인값으로 보세요. 공식 이미지 URL이 비어 있으면 사진은 표시하지 않고 공식 확인 버튼만 제공합니다.</section>
+<header class="hero"><div><h1>🏖️ 2026 여름 휴가 콘도 객실 확인</h1><p>지역·기준/최대인원·공식사진·인원추가비 확인용 공유 페이지</p></div><div class="badges"><span id="totalBadge">0건</span><span>정원 공식확인 우선</span><span>공식사진 URL 방식</span></div></header>
+<section class="notice"><b>중요</b> 카드에 표시되는 인원수는 기본적으로 <b>룸타입명 기반 자동추정값</b>입니다. 실제 신청 전에는 반드시 팝업의 <b>정원 확인</b>, <b>인원추가비 확인</b>, <b>공식 객실 페이지 찾기</b> 버튼으로 공식 홈페이지 기준인원/최대인원/추가요금을 확인하세요. <b>공식확인</b> 상태인 행만 확정값으로 취급합니다.</section>
 <section class="controls">
 <input id="q" placeholder="리조트/룸타입/지역 검색" oninput="render()">
 <select id="region" onchange="render()"><option value="">지역 전체</option></select>
 <select id="brand" onchange="render()"><option value="">브랜드 전체</option></select>
 <select id="cap" onchange="render()"><option value="">인원 전체</option><option value="4">최대 4인 이상</option><option value="5">최대 5인 이상</option><option value="6">최대 6인 이상</option><option value="7">최대 7인 이상</option></select>
-<select id="verified" onchange="render()"><option value="">확인상태 전체</option><option value="공식확인">공식확인</option><option value="자동추정">자동추정</option></select>
+<select id="verified" onchange="render()"><option value="">확인상태 전체</option><option value="공식확인">공식확인만 보기</option><option value="자동추정">정원 확인필요</option></select>
 <button onclick="resetFilters()">초기화</button><span id="count"></span>
 </section>
 <main id="app"></main>
