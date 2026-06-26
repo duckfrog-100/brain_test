@@ -19,14 +19,14 @@
 <link rel="stylesheet" href="style.css">
 </head>
 <body>
-<header class="hero"><div><h1>🏖️ 2026 여름 휴가 콘도 객실 확인</h1><p>지역·기준/최대인원·한국관광공사 API 객실정보·인원추가비 확인용 공유 페이지</p></div><div class="badges"><span id="totalBadge">0건</span><span>API 직접매칭 구분</span><span>공식확인 별도</span></div></header>
-<section class="notice"><b>중요</b> 카드에 표시되는 인원수는 기본적으로 <b>룸타입명 기반 자동추정값</b>입니다. <b>API 직접매칭</b>은 한국관광공사 객실명 직접매칭값이며, <b>API 참고값</b>은 객실명이 맞지 않은 첫 번째 객실값이므로 확정값으로 보지 마세요. 최종 신청 전에는 공식 홈페이지 기준인원/최대인원/추가요금을 확인해야 합니다.</section>
+<header class="hero"><div><h1>🏖️ 2026 여름 휴가 콘도 객실 확인</h1><p>지역·기준/최대인원·한국관광공사 API 객실정보·인원추가비 확인용 공유 페이지</p></div><div class="badges"><span id="totalBadge">0건</span><span>API 상태 필터</span><span>공식확인 별도</span></div></header>
+<section class="notice"><b>중요</b> 카드에 표시되는 인원수는 기본적으로 <b>룸타입명 기반 자동추정값</b>입니다. <b>API 사용가능/확인권장</b>만 우선 참고하고, <b>API 검증필요/확인필요/미사용권장</b>은 확정값으로 보지 마세요. 최종 신청 전에는 공식 홈페이지 기준인원/최대인원/추가요금을 확인해야 합니다.</section>
 <section class="controls">
-<input id="q" placeholder="리조트/룸타입/지역 검색" oninput="render()">
+<input id="q" placeholder="리조트/룸타입/지역/API상태 검색" oninput="render()">
 <select id="region" onchange="render()"><option value="">지역 전체</option></select>
 <select id="brand" onchange="render()"><option value="">브랜드 전체</option></select>
 <select id="cap" onchange="render()"><option value="">인원 전체</option><option value="4">최대 4인 이상</option><option value="5">최대 5인 이상</option><option value="6">최대 6인 이상</option><option value="7">최대 7인 이상</option></select>
-<select id="verified" onchange="render()"><option value="">확인상태 전체</option><option value="공식확인">공식확인만 보기</option><option value="자동추정">정원 확인필요</option></select>
+<select id="verified" onchange="render()"><option value="">API상태 전체</option><option value="API 사용가능">API 사용가능</option><option value="API 확인권장">API 확인권장</option><option value="API 검증필요">API 검증필요</option><option value="API 확인필요">API 확인필요</option><option value="API 미사용권장">API 미사용권장</option><option value="API 별도수집">API 별도수집</option><option value="API 상세없음">API 상세없음</option><option value="API 결과 없음">API 결과 없음</option></select>
 <button onclick="resetFilters()">초기화</button><span id="count"></span>
 </section>
 <main id="app"></main>
