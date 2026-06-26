@@ -41,21 +41,40 @@ function hasApiImage(api){return api && api.imageUrl && api.imageUrl.startsWith(
 function isUsableApi(api){return api && ['API 사용가능','API 확인권장'].includes(api.status) && numericGuest(api.baseGuests) && numericGuest(api.maxGuests);}
 function isReferenceApi(api){return api && ['API 검증필요','API 확인필요'].includes(api.status) && numericGuest(api.baseGuests) && numericGuest(api.maxGuests);}
 function numericGuest(v){return /^\d+$/.test(String(v||'')) && Number(v)>0;}
+function apiStatusForFilter(api){return api && api.status ? api.status : 'API 결과 없음';}
+function ensureNightFilter(){
+  if($('nightFilter')) return;
+  const dateEl=$('dateFilter');
+  if(!dateEl) return;
+  const sel=document.createElement('select');
+  sel.id='nightFilter';
+  [['','박수 전체'],['1','1박'],['2','2박'],['3','3박']].forEach(([v,t])=>{const o=document.createElement('option');o.value=v;o.textContent=t;sel.appendChild(o);});
+  sel.onchange=render;
+  dateEl.insertAdjacentElement('afterend',sel);
+}
 function init(){
+  ensureNightFilter();
   [...new Set(ROOMS.map(r=>r.region))].sort().forEach(v=> $('region').insertAdjacentHTML('beforeend',`<option>${esc(v)}</option>`));
   [...new Set(ROOMS.map(r=>r.brand))].forEach(v=> $('brand').insertAdjacentHTML('beforeend',`<option>${esc(v)}</option>`));
   $('totalBadge').textContent=ROOMS.length+'건'; render();
 }
 function filtered(){
- const q=$('q').value.trim().toLowerCase(), reg=$('region').value, br=$('brand').value, cap=Number($('cap').value||0), vf=$('verified').value;
+ const q=($('q')?.value||'').trim().toLowerCase();
+ const df=$('dateFilter')?.value||'';
+ const nf=$('nightFilter')?.value||'';
+ const reg=$('region')?.value||'';
+ const br=$('brand')?.value||'';
+ const cap=Number($('cap')?.value||0);
+ const vf=$('verified')?.value||'';
  return ROOMS.filter(r=>{
   const api=getApiInfo(r);
   const displayMax = isUsableApi(api) ? Number(api.maxGuests) : Number(r.maxGuests||0);
-  const txt=[r.no,r.resort,r.roomType,r.city,r.region,r.brand,r.date,r.day,api?.apiRoomName,api?.note,api?.status,api?.usability].join(' ').toLowerCase();
-  return (!q||txt.includes(q)) && (!reg||r.region===reg) && (!br||r.brand===br) && (!cap||displayMax>=cap) && (!vf||r.verificationStatus===vf);
+  const txt=[r.no,r.resort,r.roomType,r.city,r.region,r.brand,r.date,r.date.slice(5).replace('-','/'),r.day,r.nights,api?.apiRoomName,api?.note,api?.status,api?.usability].join(' ').toLowerCase();
+  return (!q||txt.includes(q)) && (!df||r.date===df) && (!nf||String(r.nights)===nf) && (!reg||r.region===reg) && (!br||r.brand===br) && (!cap||displayMax>=cap) && (!vf||apiStatusForFilter(api)===vf);
  });
 }
 function render(){
+ ensureNightFilter();
  const rows=filtered(); $('count').innerHTML=`<b>${rows.length}</b>건 표시 중`;
  const grouped={}; rows.forEach(r=>(grouped[r.brand]??=[]).push(r));
  $('app').innerHTML=Object.entries(grouped).map(([brand,items])=>groupTable(brand,items)).join('') || '<div class="empty">검색 결과가 없습니다.</div>';
@@ -105,5 +124,5 @@ function openModal(no){
 }
 function closeModal(e){ if(e.target.id==='modal') closeModalDirect(); }
 function closeModalDirect(){ $('modal').classList.remove('open'); document.body.style.overflow=''; }
-function resetFilters(){ ['q','region','brand','cap','verified'].forEach(id=>$(id).value=''); render(); }
+function resetFilters(){ ['q','region','brand','cap','verified','dateFilter','nightFilter'].forEach(id=>{if($(id)) $(id).value='';}); render(); }
 init();
