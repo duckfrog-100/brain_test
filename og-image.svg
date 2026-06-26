@@ -1,0 +1,18 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1200" height="630" viewBox="0 0 1200 630">
+  <defs>
+    <linearGradient id="g" x1="0" x2="1" y1="0" y2="1">
+      <stop offset="0" stop-color="#17395d"/>
+      <stop offset="0.65" stop-color="#1672a8"/>
+      <stop offset="1" stop-color="#5ba3d0"/>
+    </linearGradient>
+  </defs>
+  <rect width="1200" height="630" fill="url(#g)"/>
+  <circle cx="1040" cy="120" r="140" fill="rgba(255,255,255,0.12)"/>
+  <circle cx="110" cy="520" r="180" fill="rgba(255,255,255,0.09)"/>
+  <rect x="80" y="86" width="1040" height="458" rx="42" fill="rgba(255,255,255,0.13)" stroke="rgba(255,255,255,0.35)"/>
+  <text x="120" y="205" font-family="Arial, sans-serif" font-size="54" font-weight="700" fill="#ffffff">2026 여름 휴가 콘도</text>
+  <text x="120" y="285" font-family="Arial, sans-serif" font-size="42" font-weight="700" fill="#fff7d6">객실 정원 · 지역 · 사진 확인</text>
+  <text x="120" y="370" font-family="Arial, sans-serif" font-size="27" fill="rgba(255,255,255,0.88)">4인 이상 객실 후보와 공식 확인 링크를 한 번에 확인</text>
+  <text x="120" y="435" font-family="Arial, sans-serif" font-size="25" fill="rgba(255,255,255,0.78)">GitHub Pages 공유용 페이지</text>
+  <text x="970" y="490" font-family="Arial, sans-serif" font-size="92" text-anchor="middle" fill="#ffffff">🏖️</text>
+</svg>
