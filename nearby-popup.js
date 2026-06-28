@@ -15,6 +15,13 @@
     return typeof esc === 'function' ? esc(value) : String(value ?? '');
   }
 
+  function showLoading(r){
+    $('modalBody').innerHTML = `<div class="nearby-modal"><div class="nearby-hero"><div><p class="nearby-kicker">주변 관광 정보</p><h2>📍 ${safeEsc(r.resort)}</h2><p>한국관광공사 TourAPI 주변 정보를 불러오는 중입니다.</p></div><div class="nearby-source">로딩 중</div></div><p class="nearby-empty">잠시만 기다려주세요. 데이터가 준비되면 자동으로 다시 표시됩니다.</p></div>`;
+    $('modal').classList.add('open');
+    document.body.style.overflow = 'hidden';
+    window.addEventListener('nearby-info-ready', () => window.openNearbyModal(r.no), {once:true});
+  }
+
   function placeCard(item){
     const title = safeEsc(item.title || '이름 정보 없음');
     const type = safeEsc(item.type || '주변 정보');
@@ -71,6 +78,11 @@
   window.openNearbyModal = function(no){
     const r = ROOMS.find(x => x.no === no);
     if(!r) return;
+
+    if(window.NEARBY_INFO_LOADING && !hasNearbyData(getNearbyData(r.resort))){
+      showLoading(r);
+      return;
+    }
 
     const data = getNearbyData(r.resort);
     const infoReady = hasNearbyData(data);
