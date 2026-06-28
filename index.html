@@ -17,6 +17,7 @@
 <meta name="twitter:description" content="지역·기준/최대인원·사진 후보·인원추가비 확인용 공유 페이지">
 <meta name="twitter:image" content="https://duckfrog-100.github.io/brain_test/og-image.svg">
 <link rel="stylesheet" href="style.css">
+<link rel="stylesheet" href="nearby.css">
 </head>
 <body>
 <header class="hero"><div><h1>🏖️ 2026 여름 휴가 콘도 객실 확인</h1><p>지역·날짜·기준/최대인원·한국관광공사 API 객실정보 확인용 공유 페이지</p></div><div class="badges"><span id="totalBadge">0건</span><span>날짜 필터</span><span>API 상태 필터</span></div></header>
@@ -32,5 +33,5 @@
 </section>
 <main id="app"></main>
 <div id="modal" class="modal" onclick="closeModal(event)"><div class="modal-card"><button class="x" onclick="closeModalDirect()">×</button><div id="modalBody"></div></div></div>
-<script src="data/rooms.js"></script><script src="data/api-room-info.js"></script><script src="app.js"></script><script src="api-status-patch.js"></script>
+<script src="data/rooms.js"></script><script src="data/api-room-info.js"></script><script src="data/nearby-info.js"></script><script src="app.js"></script><script src="nearby-popup.js"></script><script src="api-status-patch.js"></script>
 </body></html>
