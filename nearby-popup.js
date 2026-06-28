@@ -62,7 +62,6 @@
     const q = nearbyQueries(r);
     return `<section class="nearby-fallback">
       <h3>직접 검색하기</h3>
-      <p class="hint">이 숙소는 아직 저장된 TourAPI 주변 정보가 없어서 검색 링크를 먼저 보여줍니다.</p>
       <div class="actions nearby-actions">
         <a href="${searchUrl(q.attractionMap,'map')}" target="_blank">네이버지도 관광지</a>
         <a href="${searchUrl(q.restaurantMap,'map')}" target="_blank">네이버지도 맛집</a>
